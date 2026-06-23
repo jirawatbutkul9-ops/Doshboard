@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard ร้านเครื่องดื่ม</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      🧋 <span>Dashboard ร้านเครื่องดื่ม</span>
+    </div>
+    <div class="navbar-links">
+      <a href="index.html" class="nav-link active">📊 Dashboard</a>
+      <a href="backend.html" class="nav-link">⚙️ หลังบ้าน</a>
+    </div>
+  </nav>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <p>กำลังโหลดข้อมูล...</p>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- ERROR -->
+    <div id="error-msg" class="error-msg"></div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <button id="btn-today" class="btn btn-outline">วันนี้</button>
+      <button id="btn-week" class="btn btn-outline">สัปดาห์นี้</button>
+      <button id="btn-month" class="btn btn-outline active">เดือนนี้</button>
+      <button id="btn-year" class="btn btn-outline">ปีนี้</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:8px;">
+        <label>จาก</label>
+        <input type="date" id="date-from" />
+        <label>ถึง</label>
+        <input type="date" id="date-to" />
+        <button id="btn-custom" class="btn btn-primary">ค้นหา</button>
+      </div>
+      <button id="btn-refresh" class="btn btn-ghost" style="margin-left:auto" title="รีเฟรชข้อมูล">🔄 รีเฟรช</button>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">ยอดขายสุทธิ</div>
+        <div class="kpi-value" id="kpi-sales">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🧾</div>
+        <div class="kpi-label">จำนวนออร์เดอร์</div>
+        <div class="kpi-value" id="kpi-orders">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">กำไรสุทธิ</div>
+        <div class="kpi-value" id="kpi-profit">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🧮</div>
+        <div class="kpi-label">ยอดเฉลี่ย/ออร์เดอร์</div>
+        <div class="kpi-value" id="kpi-avg">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label">GP%</div>
+        <div class="kpi-value" id="kpi-gp">—</div>
+      </div>
+    </div>
+
+    <!-- DAILY CHART -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="section-title">📅 ยอดขายรายวัน</div>
+      <div class="chart-wrap">
+        <canvas id="daily-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- MENU + CHANNEL -->
+    <div class="grid-2">
+      <!-- ยอดขายตามเมนู -->
+      <div class="card">
+        <div class="section-title">🥤 ยอดขายแยกตามเมนู</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>เมนู</th>
+              <th class="num">จำนวน</th>
+              <th class="num">ยอดขาย</th>
+            </tr>
+          </thead>
+          <tbody id="menu-table-body">
+            <tr><td colspan="3" class="empty">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ยอดขายตาม Channel -->
+      <div class="card">
+        <div class="section-title">📡 ยอดขายแยกตาม Channel</div>
+        <div id="channel-bars">
+          <p class="empty">กำลังโหลด...</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- THEME TOGGLE BUTTON -->
+  <button id="theme-toggle" title="เปลี่ยนธีม">🌙</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html>

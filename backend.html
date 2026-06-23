@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>หลังบ้าน — ร้านเครื่องดื่ม</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      🧋 <span>Dashboard ร้านเครื่องดื่ม</span>
+    </div>
+    <div class="navbar-links">
+      <a href="index.html" class="nav-link">📊 Dashboard</a>
+      <a href="backend.html" class="nav-link active">⚙️ หลังบ้าน</a>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <h2 style="margin-bottom:20px;font-size:1.3rem;">⚙️ ระบบหลังบ้าน</h2>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="recipe">🔒 สูตรเครื่องดื่ม</button>
+      <button class="tab-btn" data-tab="stock">📦 Stock วัตถุดิบ</button>
+      <button class="tab-btn" data-tab="campaign">🎯 แคมเปญ & โปรโมชั่น</button>
+      <button class="tab-btn" data-tab="cost">💸 ต้นทุนรายละเอียด</button>
+    </div>
+
+    <!-- TAB: RECIPE -->
+    <div id="tab-recipe" class="tab-panel active">
+
+      <!-- LOCK -->
+      <div id="recipe-lock" class="recipe-lock">
+        <div class="lock-icon">🔐</div>
+        <h3>สูตรเครื่องดื่ม</h3>
+        <p>กรุณากรอกรหัสผ่านเพื่อเข้าถึงสูตร</p>
+        <div class="password-row">
+          <input type="password" id="recipe-password" placeholder="รหัสผ่าน" maxlength="20" />
+          <button id="btn-unlock" class="btn btn-primary">ยืนยัน</button>
+        </div>
+        <p id="password-error" class="password-error"></p>
+      </div>
+
+      <!-- CONTENT (hidden until password) -->
+      <div id="recipe-content" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div class="section-title" style="margin:0;border:none;">🥤 เมนูเครื่องดื่มทั้งหมด</div>
+          <button onclick="document.getElementById('recipe-content').style.display='none';document.getElementById('recipe-lock').style.display='block';document.getElementById('recipe-password').value='';document.getElementById('password-error').textContent=''" class="btn btn-ghost" style="font-size:0.85rem;">🔒 ล็อก</button>
+        </div>
+        <div id="recipe-list" class="recipe-grid">
+          <p class="loading-text">กำลังโหลด...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: STOCK -->
+    <div id="tab-stock" class="tab-panel">
+      <div id="stock-content">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">📦</div>
+          <h3>ระบบ Stock วัตถุดิบ</h3>
+          <p>ยังไม่ได้เปิดใช้งาน</p>
+          <p class="hint">เมื่อพร้อมให้เพิ่ม Sheet "Stock" ใน Google Sheets แล้วแจ้งผู้พัฒนา</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CAMPAIGN -->
+    <div id="tab-campaign" class="tab-panel">
+      <div class="section-title">🎯 Campaign & Promotion Rules</div>
+      <div id="campaign-content">
+        <p class="loading-text">คลิกแท็บเพื่อโหลดข้อมูล</p>
+      </div>
+    </div>
+
+    <!-- TAB: COST -->
+    <div id="tab-cost" class="tab-panel">
+      <div class="section-title">💸 รายละเอียดต้นทุน</div>
+      <div id="cost-content">
+        <p class="loading-text">คลิกแท็บเพื่อโหลดข้อมูล</p>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- THEME TOGGLE BUTTON -->
+  <button id="theme-toggle" title="เปลี่ยนธีม">🌙</button>
+
+  <script src="js/config.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/backend.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    // Load campaign & cost tabs on click
+    document.querySelector('[data-tab="campaign"]').addEventListener('click', async () => {
+      const el = document.getElementById('campaign-content');
+      if (el.dataset.loaded) return;
+      el.innerHTML = '<p class="loading-text">กำลังโหลด...</p>';
+      try {
+        const [campaigns, promotions] = await Promise.all([
+          fetchSheetCached(CONFIG.SHEETS.CAMPAIGN_RULES),
+          fetchSheetCached(CONFIG.SHEETS.PROMOTION_RULES)
+        ]);
+        el.innerHTML = '';
+
+        if (campaigns.length) {
+          el.innerHTML += `<h4 style="margin-bottom:12px;color:var(--text-muted)">Campaign Rules</h4>`;
+          el.innerHTML += buildTable(campaigns);
+        }
+        if (promotions.length) {
+          el.innerHTML += `<h4 style="margin:20px 0 12px;color:var(--text-muted)">Promotion Rules</h4>`;
+          el.innerHTML += buildTable(promotions);
+        }
+        if (!campaigns.length && !promotions.length) {
+          el.innerHTML = '<p class="empty">ไม่มีข้อมูล</p>';
+        }
+        el.dataset.loaded = '1';
+      } catch(e) {
+        el.innerHTML = `<p class="error-text">โหลดไม่สำเร็จ: ${e.message}</p>`;
+      }
+    });
+
+    document.querySelector('[data-tab="cost"]').addEventListener('click', async () => {
+      const el = document.getElementById('cost-content');
+      if (el.dataset.loaded) return;
+      el.innerHTML = '<p class="loading-text">กำลังโหลด...</p>';
+      try {
+        const data = await fetchSheetCached(CONFIG.SHEETS.COST_DETAILS);
+        el.innerHTML = data.length ? buildTable(data) : '<p class="empty">ไม่มีข้อมูล</p>';
+        el.dataset.loaded = '1';
+      } catch(e) {
+        el.innerHTML = `<p class="error-text">โหลดไม่สำเร็จ: ${e.message}</p>`;
+      }
+    });
+
+    function buildTable(rows) {
+      if (!rows.length) return '<p class="empty">ไม่มีข้อมูล</p>';
+      const cols = Object.keys(rows[0]).filter(k => k);
+      let html = '<div style="overflow-x:auto"><table class="data-table"><thead><tr>';
+      cols.forEach(c => { html += `<th>${c}</th>`; });
+      html += '</tr></thead><tbody>';
+      rows.forEach(row => {
+        html += '<tr>';
+        cols.forEach(c => {
+          const val = row[c] ?? '';
+          html += `<td>${val}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      return html;
+    }
+  </script>
+</body>
+</html>
