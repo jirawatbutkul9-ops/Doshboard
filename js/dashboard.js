@@ -141,9 +141,10 @@ function renderKPIs() {
 function renderSalesByMenu() {
   const menuMap = {};
   filteredOrders.forEach((r) => {
-    const menu = r[COL.MENU] || "ไม่ระบุ";
-    const sales = Number(r[COL.NET_SALES]) || 0;
-    const qty   = Number(r[COL.QTY])       || 0;
+    const menu  = r[COL.MENU] || "ไม่ระบุ";
+    // ถ้าไม่มี Net_sales ให้คำนวณจาก Price × Qty แทน
+    const sales = Number(r[COL.NET_SALES]) || (Number(r[COL.PRICE]) * Number(r[COL.QTY])) || 0;
+    const qty   = Number(r[COL.QTY]) || 0;
     if (!menuMap[menu]) menuMap[menu] = { sales: 0, qty: 0 };
     menuMap[menu].sales += sales;
     menuMap[menu].qty   += qty;
