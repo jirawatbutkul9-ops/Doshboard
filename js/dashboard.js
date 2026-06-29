@@ -8,9 +8,12 @@ const COL = {
   CHANNEL:     "Channel",
   MENU:        "Menu",
   QTY:         "Qty",
+  PRICE:       "Selling priec & Cost Prices",
   NET_SALES:   "Net_sales",
   GP_RATE:     "GP rate",
   GP_AMOUNT:   "GP amount",
+  VAT:         "VAT on GP",
+  PAYOUT:      "Payout",
   PROFIT:      "Profit",
   REAL_PROFIT: "Real Profit",
 };
@@ -68,29 +71,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function initDateDefaults() {
-  const today = new Date();
-
   // โหลดค่าที่บันทึกไว้จาก localStorage ก่อน
-  const savedFrom = localStorage.getItem("filter_date_from");
-  const savedTo   = localStorage.getItem("filter_date_to");
+  const savedFrom   = localStorage.getItem("filter_date_from");
+  const savedTo     = localStorage.getItem("filter_date_to");
   const savedPreset = localStorage.getItem("filter_preset");
 
   if (savedFrom && savedTo) {
-    // มีค่าที่บันทึกไว้ → โหลดมาใช้เลย
     document.getElementById("date-from").value = savedFrom;
     document.getElementById("date-to").value   = savedTo;
-    // ไม่ highlight preset ไหน เพราะเป็น custom range
     ["today", "week", "month", "year"].forEach((p) => {
       document.getElementById("btn-" + p).classList.toggle("active", p === savedPreset);
     });
-    applyFilter(new Date(savedFrom), new Date(savedTo));
+    // parse แบบ UTC เพื่อป้องกัน timezone offset
+    applyFilter(parseDateStr(savedFrom), parseDateStr(savedTo));
   } else {
-    // ไม่มีค่าบันทึก → ใช้ค่า default (เดือนนี้)
+    const today = new Date();
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     document.getElementById("date-from").value = formatDate(firstOfMonth);
     document.getElementById("date-to").value   = formatDate(today);
     setPreset("month");
   }
+}
+
+// parse "YYYY-MM-DD" string ให้เป็น Date โดยไม่มี timezone issue
+function parseDateStr(str) {
+  const [y, m, d] = str.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 // ---- PRESET FILTERS ----
@@ -130,16 +136,19 @@ function setPreset(preset) {
 }
 
 function applyCustomRange() {
-  const from = new Date(document.getElementById("date-from").value);
-  const to   = new Date(document.getElementById("date-to").value);
-  if (isNaN(from) || isNaN(to)) return alert("กรุณาเลือกวันที่ให้ครบถ้วน");
+  const fromStr = document.getElementById("date-from").value;
+  const toStr   = document.getElementById("date-to").value;
+  if (!fromStr || !toStr) return alert("กรุณาเลือกวันที่ให้ครบถ้วน");
+
+  const from = parseDateStr(fromStr);
+  const to   = parseDateStr(toStr);
+
   ["today", "week", "month", "year"].forEach((p) => {
     document.getElementById("btn-" + p).classList.remove("active");
   });
 
-  // บันทึกลง localStorage
-  localStorage.setItem("filter_date_from", formatDate(from));
-  localStorage.setItem("filter_date_to",   formatDate(to));
+  localStorage.setItem("filter_date_from", fromStr);
+  localStorage.setItem("filter_date_to",   toStr);
   localStorage.removeItem("filter_preset");
 
   applyFilter(from, to);
