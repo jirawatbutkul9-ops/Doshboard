@@ -139,12 +139,33 @@ function renderKPIs() {
 }
 
 function renderSalesByMenu() {
+  // ก่อนรวม ให้ inherit Net_sales และ Price จาก row หลักสำหรับ sub-row
+  // โดยใช้ Order ID เป็น key
+  const orderSalesMap = {};
+  filteredOrders.forEach((r) => {
+    const oid = r["Order ID"];
+    if (!oid) return;
+    if (r[COL.NET_SALES] && !orderSalesMap[oid]) {
+      orderSalesMap[oid] = {
+        netSales: Number(r[COL.NET_SALES]) || 0,
+        price:    Number(r[COL.PRICE])     || 0,
+      };
+    }
+  });
+
   const menuMap = {};
   filteredOrders.forEach((r) => {
-    const menu  = r[COL.MENU] || "ไม่ระบุ";
-    // ถ้าไม่มี Net_sales ให้คำนวณจาก Price × Qty แทน
-    const sales = Number(r[COL.NET_SALES]) || (Number(r[COL.PRICE]) * Number(r[COL.QTY])) || 0;
-    const qty   = Number(r[COL.QTY]) || 0;
+    const menu = r[COL.MENU] || "ไม่ระบุ";
+    const qty  = Number(r[COL.QTY]) || 0;
+    let sales  = Number(r[COL.NET_SALES]) || 0;
+
+    // sub-row ไม่มี Net_sales → คำนวณจาก Price × Qty ของ Order นั้น
+    if (!sales && qty > 0) {
+      const oid   = r["Order ID"];
+      const price = Number(r[COL.PRICE]) || (oid && orderSalesMap[oid] ? orderSalesMap[oid].price : 0);
+      sales = price * qty;
+    }
+
     if (!menuMap[menu]) menuMap[menu] = { sales: 0, qty: 0 };
     menuMap[menu].sales += sales;
     menuMap[menu].qty   += qty;
@@ -159,7 +180,12 @@ function renderSalesByMenu() {
     return;
   }
 
+  // แถวข้อมูลแต่ละเมนู
+  let totalQty   = 0;
+  let totalSales = 0;
   sorted.forEach(([menu, data], i) => {
+    totalQty   += data.qty;
+    totalSales += data.sales;
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${i + 1}. ${menu}</td>
@@ -168,6 +194,16 @@ function renderSalesByMenu() {
     `;
     tbody.appendChild(tr);
   });
+
+  // แถวยอดรวม
+  const trTotal = document.createElement("tr");
+  trTotal.style.cssText = "font-weight:700;border-top:2px solid var(--border);background:var(--surface2)";
+  trTotal.innerHTML = `
+    <td>รวมทั้งหมด</td>
+    <td class="num">${totalQty.toLocaleString()}</td>
+    <td class="num">${formatMoney(totalSales)}</td>
+  `;
+  tbody.appendChild(trTotal);
 }
 
 function renderSalesByChannel() {
