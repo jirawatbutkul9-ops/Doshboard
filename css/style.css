@@ -397,8 +397,106 @@ a:hover {
   display: block;
 }
 
-/* ---- RECIPE ---- */
-.recipe-lock {
+/* ---- RECIPE NEW CARDS ---- */
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.recipe-card-new {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.recipe-card-new:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}
+
+.recipe-card-header {
+  background: var(--primary);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recipe-icon {
+  font-size: 1.4rem;
+}
+
+.recipe-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.recipe-cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.recipe-cost-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.recipe-cost-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--warning);
+}
+
+.recipe-price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.recipe-price-col {
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.recipe-price-col.store {
+  border-right: 1px solid var(--border);
+}
+
+.price-channel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.price-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.price-profit {
+  font-size: 0.82rem;
+  color: var(--success);
+  margin-bottom: 2px;
+}
+
+.price-gp {
+  font-size: 0.82rem;
+  color: var(--primary);
+}
+
+.price-profit.negative,
+.price-gp.negative {
+  color: var(--danger);
+}
   max-width: 380px;
   margin: 60px auto;
   text-align: center;

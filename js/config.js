@@ -13,6 +13,7 @@ const CONFIG = {
     CAMPAIGN_RULES: "Campaign_rules",
     PROMOTION_RULES: "Promotion_rules",
     COST_DETAILS: "Cost_details",
+    MENU_SUMMARY: "Menu_summary",
   },
   RECIPE_PASSWORD: "856975",
   BASE_URL: "https://docs.google.com/spreadsheets/d",

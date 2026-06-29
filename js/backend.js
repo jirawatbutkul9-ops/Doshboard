@@ -41,31 +41,51 @@ async function loadRecipes() {
   container.innerHTML = `<p class="loading-text">กำลังโหลด...</p>`;
 
   try {
-    const menuPrices = await fetchSheetCached(CONFIG.SHEETS.MENU_PRICES);
-    const menuCost = await fetchSheetCached(CONFIG.SHEETS.MENU_COST);
+    const menus = await fetchSheetCached(CONFIG.SHEETS.MENU_SUMMARY);
 
-    if (!menuPrices.length && !menuCost.length) {
+    if (!menus.length) {
       container.innerHTML = `<p class="empty">ยังไม่มีข้อมูลสูตรเครื่องดื่ม</p>`;
       return;
     }
 
     container.innerHTML = "";
-
-    // รวมข้อมูลเมนู
-    const menus = menuPrices.length ? menuPrices : menuCost;
     menus.forEach((row) => {
-      const name = row["Menu"] || row["เมนู"] || Object.values(row)[0] || "ไม่ระบุ";
-      const price = row["Price"] || row["ราคา"] || row["Selling_price"] || "";
-      const cost = row["Cost"] || row["ต้นทุน"] || "";
+      const name         = row["Menu"]             || "-";
+      const cost         = Number(row["Cost"])      || 0;
+      const priceStore   = Number(row["Price_Store"])  || 0;
+      const priceOnline  = Number(row["Price_Online"]) || 0;
+      const gpStore      = Number(row["GP_Store"])     || 0;
+      const gpOnline     = Number(row["GP_Online"])    || 0;
+      const profitStore  = Number(row["Real_Profit_Store"])  || 0;
+      const profitOnline = Number(row["Real_Profit_Online"]) || 0;
+
+      const gpStorePct  = priceStore  > 0 ? (profitStore  / priceStore  * 100) : 0;
+      const gpOnlinePct = priceOnline > 0 ? (profitOnline / priceOnline * 100) : 0;
 
       const card = document.createElement("div");
-      card.className = "recipe-card";
+      card.className = "recipe-card-new";
       card.innerHTML = `
-        <div class="recipe-name">${name}</div>
-        <div class="recipe-details">
-          ${price ? `<span>💰 ราคาขาย: ${formatMoney(price)}</span>` : ""}
-          ${cost ? `<span>🧾 ต้นทุน: ${formatMoney(cost)}</span>` : ""}
-          ${price && cost ? `<span>📊 Margin: ${formatPercent(((price - cost) / price) * 100)}</span>` : ""}
+        <div class="recipe-card-header">
+          <span class="recipe-icon">🧋</span>
+          <span class="recipe-title">${name}</span>
+        </div>
+        <div class="recipe-cost-row">
+          <span class="recipe-cost-label">ต้นทุน</span>
+          <span class="recipe-cost-value">฿${cost.toFixed(2)}</span>
+        </div>
+        <div class="recipe-price-grid">
+          <div class="recipe-price-col store">
+            <div class="price-channel">🏪 หน้าร้าน</div>
+            <div class="price-value">฿${priceStore}</div>
+            <div class="price-profit ${profitStore < 0 ? 'negative' : ''}">กำไร ฿${profitStore.toFixed(2)}</div>
+            <div class="price-gp ${gpStorePct < 0 ? 'negative' : ''}">GP ${gpStorePct.toFixed(1)}%</div>
+          </div>
+          <div class="recipe-price-col online">
+            <div class="price-channel">📱 ออนไลน์</div>
+            <div class="price-value">฿${priceOnline}</div>
+            <div class="price-profit ${profitOnline < 0 ? 'negative' : ''}">กำไร ฿${profitOnline.toFixed(2)}</div>
+            <div class="price-gp ${gpOnlinePct < 0 ? 'negative' : ''}">GP ${gpOnlinePct.toFixed(1)}%</div>
+          </div>
         </div>
       `;
       container.appendChild(card);
