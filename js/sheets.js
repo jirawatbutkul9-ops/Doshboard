@@ -35,6 +35,21 @@ async function fetchSheet(sheetName) {
       return obj;
     });
 
+  // inherit วันที่และ Channel จาก row ก่อนหน้า สำหรับ sub-row ที่ไม่มีวันที่
+  const DATE_COL = "Orders Information Date";
+  const CHANNEL_COL = "Channel";
+  let lastDate = null;
+  let lastChannel = null;
+  rows.forEach((row) => {
+    if (row[DATE_COL]) {
+      lastDate    = row[DATE_COL];
+      lastChannel = row[CHANNEL_COL];
+    } else {
+      row[DATE_COL]    = lastDate;
+      row[CHANNEL_COL] = row[CHANNEL_COL] || lastChannel;
+    }
+  });
+
   return rows;
 }
 
