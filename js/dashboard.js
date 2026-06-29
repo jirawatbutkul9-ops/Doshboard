@@ -195,7 +195,6 @@ function renderKPIs() {
   const totalHidden   = filteredOrders.reduce((s, r) => s + (Number(r[COL.HIDDEN_TOTAL] ?? r[COL.HIDDEN_COST]) || 0), 0);
   const gpRateAvg     = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE])     || 0), 0) / (totalOrders || 1);
 
-  document.getElementById("kpi-gross").textContent    = formatMoney(totalGross);
   document.getElementById("kpi-discount").textContent = formatMoney(totalDiscount);
   document.getElementById("kpi-sales").textContent    = formatMoney(totalSales);
   document.getElementById("kpi-orders").textContent   = totalOrders.toLocaleString();
