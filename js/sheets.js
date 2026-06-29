@@ -35,10 +35,11 @@ async function fetchSheet(sheetName) {
       return obj;
     });
 
-  // inherit วันที่และ Channel จาก row ก่อนหน้า สำหรับ sub-row ที่ไม่มีวันที่
-  const DATE_COL = "Orders Information Date";
+  // inherit วันที่, Channel และ Price จาก row ก่อนหน้า สำหรับ sub-row ที่ไม่มีวันที่
+  const DATE_COL    = "Orders Information Date";
   const CHANNEL_COL = "Channel";
-  let lastDate = null;
+  const PRICE_COL   = "Selling priec & Cost Prices";
+  let lastDate    = null;
   let lastChannel = null;
   rows.forEach((row) => {
     if (row[DATE_COL]) {

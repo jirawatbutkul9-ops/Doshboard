@@ -155,20 +155,10 @@ function renderKPIs() {
 function renderSalesByMenu() {
   const menuMap = {};
   filteredOrders.forEach((r) => {
-    const menu    = r[COL.MENU] || "ไม่ระบุ";
-    const qty     = Number(r[COL.QTY]) || 0;
-    let sales     = Number(r[COL.NET_SALES]) || 0;
-
-    // sub-row ไม่มี Net_sales → ดึงราคาจาก Menu_prices แทน
-    if (!sales && qty > 0) {
-      const channel  = (r[COL.CHANNEL] || "").toLowerCase();
-      const priceMap = window._menuPriceMap || {};
-      const menuInfo = priceMap[menu];
-      if (menuInfo) {
-        const price = channel === "store" ? menuInfo.store : menuInfo.online;
-        sales = price * qty;
-      }
-    }
+    const menu = r[COL.MENU] || "ไม่ระบุ";
+    const qty  = Number(r[COL.QTY]) || 0;
+    // ใช้ Net_sales ถ้ามี ไม่งั้นใช้ Price × Qty (sub-row มีค่านี้อยู่แล้ว)
+    const sales = Number(r[COL.NET_SALES]) || (Number(r[COL.PRICE]) * qty) || 0;
 
     if (!menuMap[menu]) menuMap[menu] = { sales: 0, qty: 0 };
     menuMap[menu].sales += sales;
