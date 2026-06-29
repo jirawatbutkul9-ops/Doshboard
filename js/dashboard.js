@@ -187,6 +187,7 @@ function renderKPIs() {
   const totalSales    = filteredOrders.reduce((s, r) => s + (Number(r[COL.NET_SALES])    || 0), 0);
   const totalProfit   = filteredOrders.reduce((s, r) => s + (Number(r[COL.REAL_PROFIT] !== null ? r[COL.REAL_PROFIT] : r[COL.PROFIT]) || 0), 0);
   const totalOrders   = filteredOrders.length;
+  const totalQty      = filteredOrders.reduce((s, r) => s + (Number(r[COL.QTY]) || 0), 0);
   const avgOrder      = totalOrders > 0 ? totalSales / totalOrders : 0;
   const totalGP       = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_AMOUNT])   || 0), 0);
   const totalVAT      = filteredOrders.reduce((s, r) => s + (Number(r[COL.VAT])         || 0), 0);
@@ -198,6 +199,7 @@ function renderKPIs() {
   document.getElementById("kpi-discount").textContent = formatMoney(totalDiscount);
   document.getElementById("kpi-sales").textContent    = formatMoney(totalSales);
   document.getElementById("kpi-orders").textContent   = totalOrders.toLocaleString();
+  document.getElementById("kpi-qty").textContent      = totalQty.toLocaleString();
   document.getElementById("kpi-avg").textContent      = formatMoney(avgOrder);
   document.getElementById("kpi-gp").textContent       = formatMoney(totalGP);
   document.getElementById("kpi-gp-pct").textContent   = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
