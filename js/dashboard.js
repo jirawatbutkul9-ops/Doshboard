@@ -103,13 +103,14 @@ function applyCustomRange() {
 }
 
 function applyFilter(from, to) {
-  const toEnd = new Date(to);
-  toEnd.setHours(23, 59, 59, 999);
+  // แปลงเป็น UTC เพื่อให้ตรงกับ parseDate ที่ใช้ UTC
+  const fromUTC = new Date(Date.UTC(from.getFullYear(), from.getMonth(), from.getDate()));
+  const toUTC   = new Date(Date.UTC(to.getFullYear(),   to.getMonth(),   to.getDate(), 23, 59, 59));
 
   filteredOrders = allOrders.filter((row) => {
     const d = parseDate(row[COL.DATE]);
     if (!d) return false;
-    return d >= from && d <= toEnd;
+    return d >= fromUTC && d <= toUTC;
   });
 
   renderDashboard();
@@ -227,8 +228,8 @@ function renderDailyChart() {
     type: "bar",
     data: {
       labels: labels.map((l) => {
-        const d = new Date(l);
-        return `${d.getDate()}/${d.getMonth() + 1}`;
+        const parts = l.split("-");
+        return `${parseInt(parts[2])}/${parseInt(parts[1])}`;
       }),
       datasets: [{
         label: "ยอดขาย (฿)",

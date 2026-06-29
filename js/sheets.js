@@ -61,9 +61,11 @@ function parseDate(val) {
   if (!val) return null;
   if (val instanceof Date) return val;
   // Google gviz ส่งมาเป็น "Date(year,month,day)" string
+  // month นับจาก 0 (0=มกราคม)
   if (typeof val === "string" && val.startsWith("Date(")) {
     const parts = val.replace("Date(", "").replace(")", "").split(",").map(Number);
-    return new Date(parts[0], parts[1], parts[2]);
+    // ใช้ UTC เพื่อป้องกัน timezone ทำให้วันเลื่อน
+    return new Date(Date.UTC(parts[0], parts[1], parts[2]));
   }
   const d = new Date(val);
   return isNaN(d) ? null : d;
@@ -76,7 +78,11 @@ function formatDate(date) {
   if (!date) return "";
   const d = parseDate(date);
   if (!d) return "";
-  return d.toISOString().split("T")[0];
+  // ใช้ UTC date เพื่อป้องกัน timezone offset
+  const year  = d.getUTCFullYear ? d.getUTCFullYear() : d.getFullYear();
+  const month = d.getUTCMonth   ? d.getUTCMonth() + 1 : d.getMonth() + 1;
+  const day   = d.getUTCDate    ? d.getUTCDate()       : d.getDate();
+  return `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 
 /**
