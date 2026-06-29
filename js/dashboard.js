@@ -69,10 +69,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function initDateDefaults() {
   const today = new Date();
-  const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  document.getElementById("date-from").value = formatDate(firstOfMonth);
-  document.getElementById("date-to").value   = formatDate(today);
-  setPreset("month");
+
+  // โหลดค่าที่บันทึกไว้จาก localStorage ก่อน
+  const savedFrom = localStorage.getItem("filter_date_from");
+  const savedTo   = localStorage.getItem("filter_date_to");
+  const savedPreset = localStorage.getItem("filter_preset");
+
+  if (savedFrom && savedTo) {
+    // มีค่าที่บันทึกไว้ → โหลดมาใช้เลย
+    document.getElementById("date-from").value = savedFrom;
+    document.getElementById("date-to").value   = savedTo;
+    // ไม่ highlight preset ไหน เพราะเป็น custom range
+    ["today", "week", "month", "year"].forEach((p) => {
+      document.getElementById("btn-" + p).classList.toggle("active", p === savedPreset);
+    });
+    applyFilter(new Date(savedFrom), new Date(savedTo));
+  } else {
+    // ไม่มีค่าบันทึก → ใช้ค่า default (เดือนนี้)
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    document.getElementById("date-from").value = formatDate(firstOfMonth);
+    document.getElementById("date-to").value   = formatDate(today);
+    setPreset("month");
+  }
 }
 
 // ---- PRESET FILTERS ----
@@ -103,6 +121,11 @@ function setPreset(preset) {
     document.getElementById("btn-" + p).classList.toggle("active", p === preset);
   });
 
+  // บันทึกลง localStorage
+  localStorage.setItem("filter_date_from", formatDate(from));
+  localStorage.setItem("filter_date_to",   formatDate(to));
+  localStorage.setItem("filter_preset",    preset);
+
   applyFilter(from, to);
 }
 
@@ -113,6 +136,12 @@ function applyCustomRange() {
   ["today", "week", "month", "year"].forEach((p) => {
     document.getElementById("btn-" + p).classList.remove("active");
   });
+
+  // บันทึกลง localStorage
+  localStorage.setItem("filter_date_from", formatDate(from));
+  localStorage.setItem("filter_date_to",   formatDate(to));
+  localStorage.removeItem("filter_preset");
+
   applyFilter(from, to);
 }
 
@@ -143,13 +172,17 @@ function renderKPIs() {
   const totalProfit = filteredOrders.reduce((s, r) => s + (Number(r[COL.REAL_PROFIT] !== null ? r[COL.REAL_PROFIT] : r[COL.PROFIT]) || 0), 0);
   const totalOrders = filteredOrders.length;
   const avgOrder    = totalOrders > 0 ? totalSales / totalOrders : 0;
-  const gpRateAvg   = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE]) || 0), 0) / (totalOrders || 1);
+  const totalGP     = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_AMOUNT]) || 0), 0);
+  const totalVAT    = filteredOrders.reduce((s, r) => s + (Number(r[COL.VAT])       || 0), 0);
+  const gpRateAvg   = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE])   || 0), 0) / (totalOrders || 1);
 
   document.getElementById("kpi-sales").textContent   = formatMoney(totalSales);
   document.getElementById("kpi-orders").textContent  = totalOrders.toLocaleString();
   document.getElementById("kpi-profit").textContent  = formatMoney(totalProfit);
   document.getElementById("kpi-avg").textContent     = formatMoney(avgOrder);
-  document.getElementById("kpi-gp").textContent      = formatPercent(gpRateAvg * 100);
+  document.getElementById("kpi-gp").textContent      = formatMoney(totalGP);
+  document.getElementById("kpi-gp-pct").textContent  = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
+  document.getElementById("kpi-vat").textContent     = formatMoney(totalVAT);
 }
 
 function renderSalesByMenu() {

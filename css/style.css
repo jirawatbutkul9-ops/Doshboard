@@ -272,6 +272,12 @@ a:hover {
   color: var(--primary);
 }
 
+.kpi-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* ---- GRID 2 COLUMNS ---- */
 .grid-2 {
   display: grid;
