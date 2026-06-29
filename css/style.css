@@ -272,9 +272,23 @@ a:hover {
   color: var(--primary);
 }
 
+.kpi-value.kpi-red {
+  color: var(--danger);
+}
+
 .kpi-sub {
   font-size: 0.78rem;
   color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.kpi-section-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
   margin-top: 4px;
 }
 

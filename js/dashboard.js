@@ -4,18 +4,23 @@
 
 // Column name mapping จาก gviz (parsedNumHeaders:2 ทำให้ชื่อแปลก)
 const COL = {
-  DATE:        "Orders Information Date",
-  CHANNEL:     "Channel",
-  MENU:        "Menu",
-  QTY:         "Qty",
-  PRICE:       "Selling priec & Cost Prices",
-  NET_SALES:   "Net_sales",
-  GP_RATE:     "GP rate",
-  GP_AMOUNT:   "GP amount",
-  VAT:         "VAT on GP",
-  PAYOUT:      "Payout",
-  PROFIT:      "Profit",
-  REAL_PROFIT: "Real Profit",
+  DATE:         "Orders Information Date",
+  CHANNEL:      "Channel",
+  MENU:         "Menu",
+  QTY:          "Qty",
+  PRICE:        "Selling priec & Cost Prices",
+  GROSS_SALES:  "Calculate sales Gross sales",
+  ORDER_TOTAL:  "Order total",
+  DISCOUNT:     "Order discount",
+  NET_SALES:    "Net_sales",
+  GP_RATE:      "GP rate",
+  GP_AMOUNT:    "GP amount",
+  VAT:          "VAT on GP",
+  PAYOUT:       "Payout",
+  PROFIT:       "Profit",
+  HIDDEN_COST:  "Hidden_cost",
+  HIDDEN_TOTAL: "Hidden_cost_total",
+  REAL_PROFIT:  "Real Profit",
 };
 
 let allOrders = [];
@@ -177,21 +182,29 @@ function renderDashboard() {
 }
 
 function renderKPIs() {
-  const totalSales  = filteredOrders.reduce((s, r) => s + (Number(r[COL.NET_SALES])  || 0), 0);
-  const totalProfit = filteredOrders.reduce((s, r) => s + (Number(r[COL.REAL_PROFIT] !== null ? r[COL.REAL_PROFIT] : r[COL.PROFIT]) || 0), 0);
-  const totalOrders = filteredOrders.length;
-  const avgOrder    = totalOrders > 0 ? totalSales / totalOrders : 0;
-  const totalGP     = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_AMOUNT]) || 0), 0);
-  const totalVAT    = filteredOrders.reduce((s, r) => s + (Number(r[COL.VAT])       || 0), 0);
-  const gpRateAvg   = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE])   || 0), 0) / (totalOrders || 1);
+  const totalGross    = filteredOrders.reduce((s, r) => s + (Number(r[COL.GROSS_SALES])  || 0), 0);
+  const totalDiscount = filteredOrders.reduce((s, r) => s + (Number(r[COL.DISCOUNT])     || 0), 0);
+  const totalSales    = filteredOrders.reduce((s, r) => s + (Number(r[COL.NET_SALES])    || 0), 0);
+  const totalProfit   = filteredOrders.reduce((s, r) => s + (Number(r[COL.REAL_PROFIT] !== null ? r[COL.REAL_PROFIT] : r[COL.PROFIT]) || 0), 0);
+  const totalOrders   = filteredOrders.length;
+  const avgOrder      = totalOrders > 0 ? totalSales / totalOrders : 0;
+  const totalGP       = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_AMOUNT])   || 0), 0);
+  const totalVAT      = filteredOrders.reduce((s, r) => s + (Number(r[COL.VAT])         || 0), 0);
+  const totalPayout   = filteredOrders.reduce((s, r) => s + (Number(r[COL.PAYOUT])      || 0), 0);
+  const totalHidden   = filteredOrders.reduce((s, r) => s + (Number(r[COL.HIDDEN_TOTAL] ?? r[COL.HIDDEN_COST]) || 0), 0);
+  const gpRateAvg     = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE])     || 0), 0) / (totalOrders || 1);
 
-  document.getElementById("kpi-sales").textContent   = formatMoney(totalSales);
-  document.getElementById("kpi-orders").textContent  = totalOrders.toLocaleString();
-  document.getElementById("kpi-profit").textContent  = formatMoney(totalProfit);
-  document.getElementById("kpi-avg").textContent     = formatMoney(avgOrder);
-  document.getElementById("kpi-gp").textContent      = formatMoney(totalGP);
-  document.getElementById("kpi-gp-pct").textContent  = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
-  document.getElementById("kpi-vat").textContent     = formatMoney(totalVAT);
+  document.getElementById("kpi-gross").textContent    = formatMoney(totalGross);
+  document.getElementById("kpi-discount").textContent = formatMoney(totalDiscount);
+  document.getElementById("kpi-sales").textContent    = formatMoney(totalSales);
+  document.getElementById("kpi-orders").textContent   = totalOrders.toLocaleString();
+  document.getElementById("kpi-avg").textContent      = formatMoney(avgOrder);
+  document.getElementById("kpi-gp").textContent       = formatMoney(totalGP);
+  document.getElementById("kpi-gp-pct").textContent   = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
+  document.getElementById("kpi-vat").textContent      = formatMoney(totalVAT);
+  document.getElementById("kpi-payout").textContent   = formatMoney(totalPayout);
+  document.getElementById("kpi-hidden").textContent   = formatMoney(totalHidden);
+  document.getElementById("kpi-profit").textContent   = formatMoney(totalProfit);
 }
 
 function renderSalesByMenu() {
