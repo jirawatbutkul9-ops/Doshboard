@@ -22,7 +22,21 @@ let filteredOrders = [];
 document.addEventListener("DOMContentLoaded", async () => {
   showLoading(true);
   try {
-    allOrders = await fetchSheetCached(CONFIG.SHEETS.ORDERS);
+    const [orders, menuPrices] = await Promise.all([
+      fetchSheetCached(CONFIG.SHEETS.ORDERS),
+      fetchSheetCached(CONFIG.SHEETS.MENU_PRICES),
+    ]);
+    allOrders = orders;
+
+    // สร้าง map ราคาจาก Menu_prices: { "Thai Tea": { store: 45, online: 60 }, ... }
+    window._menuPriceMap = {};
+    menuPrices.forEach((r) => {
+      const name   = (r["Menu"] || r["เมนู"] || Object.values(r)[0] || "").trim();
+      const store  = Number(r["Store"]  || r["Prices Store"]  || Object.values(r)[1]) || 0;
+      const online = Number(r["Online"] || r["Prices Online"] || Object.values(r)[2]) || 0;
+      if (name) window._menuPriceMap[name] = { store, online };
+    });
+
     initDateDefaults();
   } catch (e) {
     showError("ไม่สามารถดึงข้อมูลได้: " + e.message);
@@ -139,31 +153,21 @@ function renderKPIs() {
 }
 
 function renderSalesByMenu() {
-  // ก่อนรวม ให้ inherit Net_sales และ Price จาก row หลักสำหรับ sub-row
-  // โดยใช้ Order ID เป็น key
-  const orderSalesMap = {};
-  filteredOrders.forEach((r) => {
-    const oid = r["Order ID"];
-    if (!oid) return;
-    if (r[COL.NET_SALES] && !orderSalesMap[oid]) {
-      orderSalesMap[oid] = {
-        netSales: Number(r[COL.NET_SALES]) || 0,
-        price:    Number(r[COL.PRICE])     || 0,
-      };
-    }
-  });
-
   const menuMap = {};
   filteredOrders.forEach((r) => {
-    const menu = r[COL.MENU] || "ไม่ระบุ";
-    const qty  = Number(r[COL.QTY]) || 0;
-    let sales  = Number(r[COL.NET_SALES]) || 0;
+    const menu    = r[COL.MENU] || "ไม่ระบุ";
+    const qty     = Number(r[COL.QTY]) || 0;
+    let sales     = Number(r[COL.NET_SALES]) || 0;
 
-    // sub-row ไม่มี Net_sales → คำนวณจาก Price × Qty ของ Order นั้น
+    // sub-row ไม่มี Net_sales → ดึงราคาจาก Menu_prices แทน
     if (!sales && qty > 0) {
-      const oid   = r["Order ID"];
-      const price = Number(r[COL.PRICE]) || (oid && orderSalesMap[oid] ? orderSalesMap[oid].price : 0);
-      sales = price * qty;
+      const channel  = (r[COL.CHANNEL] || "").toLowerCase();
+      const priceMap = window._menuPriceMap || {};
+      const menuInfo = priceMap[menu];
+      if (menuInfo) {
+        const price = channel === "store" ? menuInfo.store : menuInfo.online;
+        sales = price * qty;
+      }
     }
 
     if (!menuMap[menu]) menuMap[menu] = { sales: 0, qty: 0 };
