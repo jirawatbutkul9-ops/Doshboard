@@ -2,13 +2,8 @@
 //  DASHBOARD.JS — Logic หน้า Dashboard
 // ==========================================
 
-// Column names for campaigns (ในคอลัมน์ Orders)
-const COL_CAMPAIGN = {
-  PARTNER_CAMPAIGN: "Partner campaign",
-  DISCOUNT_CAMPAIGN: "Discount campaign",
-  PROMOTION_SHOP: "Promotion shop",
-  DISCOUNT_PROMOTION: "Discount promotion",
-};
+// Column name mapping จาก gviz (parsedNumHeaders:2 ทำให้ชื่อแปลก)
+const COL = {
   DATE:         "Orders Information Date",
   CHANNEL:      "Channel",
   MENU:         "Menu",
@@ -26,6 +21,14 @@ const COL_CAMPAIGN = {
   HIDDEN_COST:  "Hidden_cost",
   HIDDEN_TOTAL: "Hidden_cost_total",
   REAL_PROFIT:  "Real Profit",
+};
+
+// Column names for campaigns (ในคอลัมน์ Orders)
+const COL_CAMPAIGN = {
+  PARTNER_CAMPAIGN: "Partner campaign",
+  DISCOUNT_CAMPAIGN: "Discount campaign",
+  PROMOTION_SHOP: "Promotion shop",
+  DISCOUNT_PROMOTION: "Discount promotion",
 };
 
 let allOrders = [];
