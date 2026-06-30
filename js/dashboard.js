@@ -176,6 +176,7 @@ function applyFilter(from, to) {
 // ---- RENDER ----
 function renderDashboard() {
   renderKPIs();
+  renderCampaign();
   renderSalesByMenu();
   renderSalesByChannel();
   renderDailyChart();
@@ -206,6 +207,44 @@ function renderKPIs() {
   document.getElementById("kpi-payout").textContent   = formatMoney(totalPayout);
   document.getElementById("kpi-hidden").textContent   = formatMoney(totalHidden);
   document.getElementById("kpi-profit").textContent   = formatMoney(totalProfit);
+}
+
+async function renderCampaign() {
+  try {
+    const campaigns = await fetchSheetCached(CONFIG.SHEETS.CAMPAIGN_RULES);
+    const promotions = await fetchSheetCached(CONFIG.SHEETS.PROMOTION_RULES);
+    
+    // รวมข้อมูล campaign และ promotion
+    const allCampaigns = [...campaigns, ...promotions];
+    
+    if (allCampaigns.length === 0) {
+      // ถ้าไม่มีข้อมูล ให้แสดง —
+      document.getElementById("campaign-partner").textContent = "—";
+      document.getElementById("campaign-discount").textContent = "—";
+      document.getElementById("campaign-promotion").textContent = "—";
+      document.getElementById("campaign-promo-discount").textContent = "—";
+      return;
+    }
+    
+    // ดึงข้อมูลแถวแรก (หรือสามารถรวมทั้งหมดได้)
+    const firstRow = allCampaigns[0];
+    
+    const partner = (firstRow["Partner campaign"] || firstRow["Partner_campaign"] || "—");
+    const discount = (firstRow["Discount campaign"] || firstRow["Discount_campaign"] || "—");
+    const promotion = (firstRow["Promotion shop"] || firstRow["Promotion_shop"] || "—");
+    const promoDiscount = (firstRow["Discount promotion"] || firstRow["Discount_promotion"] || "—");
+    
+    document.getElementById("campaign-partner").textContent = String(partner);
+    document.getElementById("campaign-discount").textContent = String(discount);
+    document.getElementById("campaign-promotion").textContent = String(promotion);
+    document.getElementById("campaign-promo-discount").textContent = String(promoDiscount);
+  } catch (e) {
+    console.error("Error loading campaigns:", e);
+    document.getElementById("campaign-partner").textContent = "ข้อมูลไม่ได้";
+    document.getElementById("campaign-discount").textContent = "ข้อมูลไม่ได้";
+    document.getElementById("campaign-promotion").textContent = "ข้อมูลไม่ได้";
+    document.getElementById("campaign-promo-discount").textContent = "ข้อมูลไม่ได้";
+  }
 }
 
 function renderSalesByMenu() {
