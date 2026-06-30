@@ -203,18 +203,26 @@ function renderKPIs() {
   const totalPayout   = filteredOrders.reduce((s, r) => s + (Number(r[COL.PAYOUT])      || 0), 0);
   const totalHidden   = filteredOrders.reduce((s, r) => s + (Number(r[COL.HIDDEN_TOTAL] ?? r[COL.HIDDEN_COST]) || 0), 0);
   const gpRateAvg     = filteredOrders.reduce((s, r) => s + (Number(r[COL.GP_RATE])     || 0), 0) / (totalOrders || 1);
+  
+  // Cost Total = VAT + Payout + Hidden Cost
+  const totalCost     = totalVAT + totalPayout + totalHidden;
+  // Profit Total = Profit - Total Cost
+  const profitTotal   = totalProfit - totalCost;
 
-  document.getElementById("kpi-discount").textContent = formatMoney(totalDiscount);
-  document.getElementById("kpi-sales").textContent    = formatMoney(totalSales);
-  document.getElementById("kpi-orders").textContent   = totalOrders.toLocaleString();
-  document.getElementById("kpi-qty").textContent      = totalQty.toLocaleString();
-  document.getElementById("kpi-avg").textContent      = formatMoney(avgOrder);
-  document.getElementById("kpi-gp").textContent       = formatMoney(totalGP);
-  document.getElementById("kpi-gp-pct").textContent   = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
-  document.getElementById("kpi-vat").textContent      = formatMoney(totalVAT);
-  document.getElementById("kpi-payout").textContent   = formatMoney(totalPayout);
-  document.getElementById("kpi-hidden").textContent   = formatMoney(totalHidden);
-  document.getElementById("kpi-profit").textContent   = formatMoney(totalProfit);
+  document.getElementById("kpi-qty").textContent        = totalQty.toLocaleString();
+  document.getElementById("kpi-discount").textContent   = formatMoney(totalDiscount);
+  document.getElementById("kpi-sales").textContent      = formatMoney(totalSales);
+  document.getElementById("kpi-orders").textContent     = totalOrders.toLocaleString();
+  document.getElementById("kpi-avg").textContent        = formatMoney(avgOrder);
+  
+  document.getElementById("kpi-net-sales").textContent  = formatMoney(totalSales);
+  document.getElementById("kpi-gp").textContent         = formatMoney(totalGP);
+  document.getElementById("kpi-gp-pct").textContent     = `(${formatPercent(gpRateAvg * 100)} เฉลี่ย)`;
+  document.getElementById("kpi-vat").textContent        = formatMoney(totalVAT);
+  document.getElementById("kpi-payout").textContent     = formatMoney(totalPayout);
+  document.getElementById("kpi-profit").textContent     = formatMoney(totalProfit);
+  document.getElementById("kpi-cost-total").textContent = formatMoney(totalCost);
+  document.getElementById("kpi-profit-total").textContent = formatMoney(profitTotal);
 }
 
 async function renderCampaign() {
