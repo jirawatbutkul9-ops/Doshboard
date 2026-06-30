@@ -2,8 +2,13 @@
 //  DASHBOARD.JS — Logic หน้า Dashboard
 // ==========================================
 
-// Column name mapping จาก gviz (parsedNumHeaders:2 ทำให้ชื่อแปลก)
-const COL = {
+// Column names for campaigns (ในคอลัมน์ Orders)
+const COL_CAMPAIGN = {
+  PARTNER_CAMPAIGN: "Partner campaign",
+  DISCOUNT_CAMPAIGN: "Discount campaign",
+  PROMOTION_SHOP: "Promotion shop",
+  DISCOUNT_PROMOTION: "Discount promotion",
+};
   DATE:         "Orders Information Date",
   CHANNEL:      "Channel",
   MENU:         "Menu",
@@ -211,30 +216,33 @@ function renderKPIs() {
 
 async function renderCampaign() {
   try {
-    const campaigns = await fetchSheetCached(CONFIG.SHEETS.CAMPAIGN_RULES);
-    const promotions = await fetchSheetCached(CONFIG.SHEETS.PROMOTION_RULES);
+    // นับจาก filteredOrders (ตามช่วงเวลาที่ filter)
     
-    // นับจำนวนแคมเปญ
-    const campaignCount = campaigns.length;
+    // Partner campaign: นับจำนวนแถวที่ Partner campaign ไม่ว่าง
+    const partnerCampaignCount = filteredOrders.filter(r => 
+      r[COL_CAMPAIGN.PARTNER_CAMPAIGN] && r[COL_CAMPAIGN.PARTNER_CAMPAIGN].toString().trim() !== ""
+    ).length;
     
-    // รวมส่วนลดจาก Campaign (คอลัมน์ "Discount")
-    const totalCampaignDiscount = campaigns.reduce((sum, row) => {
-      return sum + (Number(row["Discount"]) || 0);
+    // Discount campaign: รวมยอดเงิน
+    const discountCampaignTotal = filteredOrders.reduce((sum, r) => {
+      return sum + (Number(r[COL_CAMPAIGN.DISCOUNT_CAMPAIGN]) || 0);
     }, 0);
     
-    // นับจำนวนโปรโมชั่น
-    const promotionCount = promotions.length;
+    // Promotion shop: นับจำนวนแถวที่ Promotion shop ไม่ว่าง
+    const promotionShopCount = filteredOrders.filter(r => 
+      r[COL_CAMPAIGN.PROMOTION_SHOP] && r[COL_CAMPAIGN.PROMOTION_SHOP].toString().trim() !== ""
+    ).length;
     
-    // รวมส่วนลดจาก Promotion (คอลัมน์ "Discount")
-    const totalPromotionDiscount = promotions.reduce((sum, row) => {
-      return sum + (Number(row["Discount"]) || 0);
+    // Discount promotion: รวมยอดเงิน
+    const discountPromotionTotal = filteredOrders.reduce((sum, r) => {
+      return sum + (Number(r[COL_CAMPAIGN.DISCOUNT_PROMOTION]) || 0);
     }, 0);
     
     // อัปเดต UI
-    document.getElementById("campaign-partner").textContent = campaignCount > 0 ? campaignCount.toString() : "—";
-    document.getElementById("campaign-discount").textContent = totalCampaignDiscount > 0 ? formatMoney(totalCampaignDiscount) : "—";
-    document.getElementById("campaign-promotion").textContent = promotionCount > 0 ? promotionCount.toString() : "—";
-    document.getElementById("campaign-promo-discount").textContent = totalPromotionDiscount > 0 ? formatMoney(totalPromotionDiscount) : "—";
+    document.getElementById("campaign-partner").textContent = partnerCampaignCount > 0 ? partnerCampaignCount.toString() : "—";
+    document.getElementById("campaign-discount").textContent = discountCampaignTotal > 0 ? formatMoney(discountCampaignTotal) : "—";
+    document.getElementById("campaign-promotion").textContent = promotionShopCount > 0 ? promotionShopCount.toString() : "—";
+    document.getElementById("campaign-promo-discount").textContent = discountPromotionTotal > 0 ? formatMoney(discountPromotionTotal) : "—";
   } catch (e) {
     console.error("Error loading campaigns:", e);
     document.getElementById("campaign-partner").textContent = "ข้อมูลไม่ได้";
