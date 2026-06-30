@@ -214,30 +214,27 @@ async function renderCampaign() {
     const campaigns = await fetchSheetCached(CONFIG.SHEETS.CAMPAIGN_RULES);
     const promotions = await fetchSheetCached(CONFIG.SHEETS.PROMOTION_RULES);
     
-    // รวมข้อมูล campaign และ promotion
-    const allCampaigns = [...campaigns, ...promotions];
+    // นับจำนวนแคมเปญ
+    const campaignCount = campaigns.length;
     
-    if (allCampaigns.length === 0) {
-      // ถ้าไม่มีข้อมูล ให้แสดง —
-      document.getElementById("campaign-partner").textContent = "—";
-      document.getElementById("campaign-discount").textContent = "—";
-      document.getElementById("campaign-promotion").textContent = "—";
-      document.getElementById("campaign-promo-discount").textContent = "—";
-      return;
-    }
+    // รวมส่วนลดจาก Campaign (คอลัมน์ "Discount")
+    const totalCampaignDiscount = campaigns.reduce((sum, row) => {
+      return sum + (Number(row["Discount"]) || 0);
+    }, 0);
     
-    // ดึงข้อมูลแถวแรก (หรือสามารถรวมทั้งหมดได้)
-    const firstRow = allCampaigns[0];
+    // นับจำนวนโปรโมชั่น
+    const promotionCount = promotions.length;
     
-    const partner = (firstRow["Partner campaign"] || firstRow["Partner_campaign"] || "—");
-    const discount = (firstRow["Discount campaign"] || firstRow["Discount_campaign"] || "—");
-    const promotion = (firstRow["Promotion shop"] || firstRow["Promotion_shop"] || "—");
-    const promoDiscount = (firstRow["Discount promotion"] || firstRow["Discount_promotion"] || "—");
+    // รวมส่วนลดจาก Promotion (คอลัมน์ "Discount")
+    const totalPromotionDiscount = promotions.reduce((sum, row) => {
+      return sum + (Number(row["Discount"]) || 0);
+    }, 0);
     
-    document.getElementById("campaign-partner").textContent = String(partner);
-    document.getElementById("campaign-discount").textContent = String(discount);
-    document.getElementById("campaign-promotion").textContent = String(promotion);
-    document.getElementById("campaign-promo-discount").textContent = String(promoDiscount);
+    // อัปเดต UI
+    document.getElementById("campaign-partner").textContent = campaignCount > 0 ? campaignCount.toString() : "—";
+    document.getElementById("campaign-discount").textContent = totalCampaignDiscount > 0 ? formatMoney(totalCampaignDiscount) : "—";
+    document.getElementById("campaign-promotion").textContent = promotionCount > 0 ? promotionCount.toString() : "—";
+    document.getElementById("campaign-promo-discount").textContent = totalPromotionDiscount > 0 ? formatMoney(totalPromotionDiscount) : "—";
   } catch (e) {
     console.error("Error loading campaigns:", e);
     document.getElementById("campaign-partner").textContent = "ข้อมูลไม่ได้";
